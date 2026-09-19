@@ -61,4 +61,10 @@
     <string name="theme_dark">Dark</string>
     <string name="torch">Flashlight</string>
     <string name="rename_title">Rename area</string>
+
+    <string name="settings_pill_style">Scan result colours</string>
+    <string name="pill_blue_amber">Blue and amber</string>
+    <string name="pill_white_dashed_amber">White and dashed amber</string>
+    <string name="pill_blue_magenta">Blue and magenta</string>
+    <string name="pill_green_amber">Green and amber (original)</string>
 </resources>

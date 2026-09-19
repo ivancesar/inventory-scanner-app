@@ -61,4 +61,10 @@
     <string name="theme_dark">Tamna</string>
     <string name="torch">Svjetiljka</string>
     <string name="rename_title">Preimenuj područje</string>
+
+    <string name="settings_pill_style">Boje rezultata skeniranja</string>
+    <string name="pill_blue_amber">Plava i jantarna</string>
+    <string name="pill_white_dashed_amber">Bijela i isprekidana jantarna</string>
+    <string name="pill_blue_magenta">Plava i magenta</string>
+    <string name="pill_green_amber">Zelena i jantarna (izvorna)</string>
 </resources>

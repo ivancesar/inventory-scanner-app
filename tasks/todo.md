@@ -80,3 +80,8 @@ Coordinator prep (done on `main` before the agents): 5 Tabler vector drawables, 
 - [x] **15. New area popup** — replaces the New area page; same popup design as Rename; can't be dismissed without a name, Settings is the other button.
 - [x] **16. Unified scan-screen controls** — one style (48dp, #2A2A2A, white 22dp icons; circles or pills); torch hidden without a flash.
 - [x] **17. Code-review fixes** — Theme dropdown state; nav-bar scrim on API < 29; live-state guard in `handle()`; distinct duplicate tone; rename focus inside the dialog; dropdown fallback; `Store.rename` rejects blank names; result pill is a live region. The upload-batch fix was dropped by decision (see SPEC assumption 9).
+
+## Phone-test fixes (branch `fix/scan-repeats-and-pill-styles`)
+
+- [x] **18. Fewer repeat reads** — `RepeatFilter` waits 3 s (was 1.5 s) before re-reading a code that left the view (tuning knob in `Scanner.kt`). Each code keeps its own timer (reading another code used to cancel it), and the filter survives camera restarts (Settings, New area popup).
+- [x] **19. Scan-result colour styles** — Settings dropdown "Scan result colours" with a live preview: Blue and amber (default), White and dashed amber, Blue and magenta, Green and amber (original). All styles use ✓ / ⚠ symbols and bigger text; the duplicate pill says "Already scanned".

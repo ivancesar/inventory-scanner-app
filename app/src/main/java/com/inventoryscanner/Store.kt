@@ -95,5 +95,8 @@ class Settings(private val prefs: SharedPreferences) {
     var nightMode: Int
         get() = prefs.getInt("nightMode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         set(v) = prefs.edit { putInt("nightMode", v) }
+    var pillStyle: PillStyle
+        get() = PillStyle.entries.firstOrNull { it.name == prefs.getString("pillStyle", null) } ?: PillStyle.BlueAmber
+        set(v) = prefs.edit { putString("pillStyle", v.name) }
     val configured: Boolean get() = url.isNotBlank() && user.isNotBlank()
 }
