@@ -1,6 +1,7 @@
 package com.inventoryscanner
 
 import android.content.SharedPreferences
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.edit
 import org.json.JSONArray
 import org.json.JSONException
@@ -56,6 +57,11 @@ class Store(private val file: File) {
         rewrite(area.copy(scans = area.scans.toMutableList().apply { removeAt(index) }))
     }
 
+    fun rename(name: String): Area {
+        val area = checkNotNull(load()) { "No open area" }
+        return area.copy(name = name.trim()).also(::rewrite)
+    }
+
     fun clear() {
         Files.deleteIfExists(file.toPath())
     }
@@ -85,5 +91,8 @@ class Settings(private val prefs: SharedPreferences) {
     var user: String
         get() = prefs.getString("user", "") ?: ""
         set(v) = prefs.edit { putString("user", v) }
+    var nightMode: Int
+        get() = prefs.getInt("nightMode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        set(v) = prefs.edit { putInt("nightMode", v) }
     val configured: Boolean get() = url.isNotBlank() && user.isNotBlank()
 }

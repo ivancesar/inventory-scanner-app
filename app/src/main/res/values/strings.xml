@@ -29,7 +29,7 @@
         <item quantity="other">%d scanned</item>
     </plurals>
     <string name="scan_list">Scans</string>
-    <string name="scan_finish">Finish area</string>
+    <string name="scan_finish">Finish</string>
     <string name="scan_dup_title">Already scanned</string>
     <string name="scan_dup_message">%1$s is already scanned in this area. Add it again?</string>
     <string name="scan_dup_add">Add</string>
@@ -55,4 +55,11 @@
         <item quantity="one">Uploaded %d row</item>
         <item quantity="other">Uploaded %d rows</item>
     </plurals>
+
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="torch">Flashlight</string>
+    <string name="rename_title">Rename area</string>
 </resources>

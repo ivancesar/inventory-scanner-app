@@ -28,7 +28,7 @@
         <item quantity="other">%d skeniranih</item>
     </plurals>
     <string name="scan_list">Skenirano</string>
-    <string name="scan_finish">Završi područje</string>
+    <string name="scan_finish">Završi</string>
     <string name="scan_dup_title">Već skenirano</string>
     <string name="scan_dup_message">%1$s je već skeniran u ovom području. Dodati ponovno?</string>
     <string name="scan_dup_add">Dodaj</string>
@@ -55,4 +55,11 @@
         <item quantity="few">Poslana %d retka</item>
         <item quantity="other">Poslano %d redaka</item>
     </plurals>
+
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Prema sustavu</string>
+    <string name="theme_light">Svijetla</string>
+    <string name="theme_dark">Tamna</string>
+    <string name="torch">Svjetiljka</string>
+    <string name="rename_title">Preimenuj područje</string>
 </resources>

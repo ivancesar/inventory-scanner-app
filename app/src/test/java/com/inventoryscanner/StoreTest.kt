@@ -38,6 +38,18 @@ class StoreTest {
         assertEquals(listOf("a", "c", "d"), Store(file).load()!!.scans.map { it.code })
     }
 
+    @Test fun renameKeepsBatchAndScans() {
+        val store = Store(file)
+        val started = store.start("A")
+        store.add("a", "t"); store.add("b", "t")
+        store.rename("  B ")
+        store.add("c", "t")
+        val loaded = Store(file).load()!!
+        assertEquals("B", loaded.name)
+        assertEquals(started.batchId, loaded.batchId)
+        assertEquals(listOf("a", "b", "c"), loaded.scans.map { it.code })
+    }
+
     @Test fun clearLeavesNothing() {
         val store = Store(file)
         store.start("A")

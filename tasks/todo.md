@@ -62,3 +62,15 @@ Standard check for every task: `./gradlew testDebugUnitTest lintDebug assembleDe
   - Files: `app/build.gradle.kts`, `README.md`, `.gitignore`
 
 - [ ] **CP3** — all spec Success Criteria checked. **You:** proofread `values-hr/strings.xml`.
+
+## Scan screen redesign ([docs/ideas/scan-screen-redesign.md](../docs/ideas/scan-screen-redesign.md))
+
+Coordinator prep (done on `main` before the agents): 5 Tabler vector drawables, new EN/HR strings, `Store.rename`, `Settings.nightMode`, theme + edge-to-edge in `MainActivity`, `StoreTest.renameKeepsBatchAndScans`.
+
+- [ ] **12. Scan screen redesign** (agent A; owns `ScanScreens.kt`, `Scanner.kt`)
+  - Acceptance: always-dark camera screen; top row torch / area pill (tap → rename dialog) / settings; aiming frame; green pill for a new scan, amber pill + warning haptic + Add/Skip dialog for a duplicate; bottom row clipboard button with white/black count badge, empty centre, Finish on the right; `BarcodeCamera(..., torch)`; light status-bar icons on the scan screen.
+  - Verify: `./gradlew testDebugUnitTest lintDebug assembleDebug`; emulator check.
+- [ ] **13. Settings dropdowns** (agent B; owns `SettingsScreen.kt`)
+  - Acceptance: Language and Theme (System/Light/Dark) as `ExposedDropdownMenuBox` dropdowns built from lists; both apply immediately; the theme is saved in `Settings.nightMode`.
+  - Verify: same; emulator check that the theme flips and survives a force-stop.
+- [ ] **14. Merge, emulator check, SPEC update** (coordinator)
