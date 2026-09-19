@@ -40,3 +40,6 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+
+# Agent worktrees
+.claude/
