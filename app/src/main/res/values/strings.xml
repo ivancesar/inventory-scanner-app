@@ -1,3 +1,55 @@
 <resources>
     <string name="app_name">Inventory Scanner</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="retry">Retry</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_url">Sheet link</string>
+    <string name="settings_url_hint">Paste the link from your sheet owner</string>
+    <string name="settings_scan_qr">Scan QR code</string>
+    <string name="settings_name">Your name</string>
+    <string name="settings_language">Language</string>
+    <string name="lang_en" translatable="false">English</string>
+    <string name="lang_hr" translatable="false">Hrvatski</string>
+    <string name="settings_test">Test connection</string>
+    <string name="settings_testing">Testing…</string>
+    <string name="settings_connected">Connected to: %1$s</string>
+    <string name="settings_save">Save</string>
+    <string name="error_bad_url">This isn\'t a valid sheet link. It should start with https://script.google.com/</string>
+    <string name="error_connection">Couldn\'t connect: %1$s</string>
+    <string name="error_network">No internet connection</string>
+
+    <string name="area_title">New area</string>
+    <string name="area_name">Area name</string>
+    <string name="area_start">Start scanning</string>
+
+    <plurals name="scans_count">
+        <item quantity="one">%d scanned</item>
+        <item quantity="other">%d scanned</item>
+    </plurals>
+    <string name="scan_list">Scans</string>
+    <string name="scan_finish">Finish area</string>
+    <string name="scan_dup_title">Already scanned</string>
+    <string name="scan_dup_message">%1$s is already scanned in this area. Add it again?</string>
+    <string name="scan_dup_add">Add</string>
+    <string name="scan_dup_skip">Skip</string>
+    <string name="scan_too_long">Code too long, not saved</string>
+    <string name="camera_permission">The camera is needed to scan barcodes.</string>
+    <string name="camera_grant">Allow camera</string>
+
+    <string name="drawer_empty">No scans yet</string>
+    <string name="delete_title">Delete this scan?</string>
+    <string name="delete_confirm">Delete</string>
+    <string name="abandon">Abandon area</string>
+    <string name="abandon_title">Abandon area?</string>
+    <string name="abandon_message">Delete all scans (%1$d) from this area without uploading? This can\'t be undone.</string>
+    <string name="abandon_confirm">Abandon</string>
+
+    <string name="finish_title">Finish area?</string>
+    <string name="finish_message">Upload all scans (%1$d) from “%2$s” to the sheet?</string>
+    <string name="finish_confirm">Upload</string>
+    <string name="uploading">Uploading…</string>
+    <string name="upload_failed">Upload failed: %1$s\nYour scans are still saved on this phone.</string>
+    <string name="upload_done">Uploaded %1$d rows</string>
 </resources>

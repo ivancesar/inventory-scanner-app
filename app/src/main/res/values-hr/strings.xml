@@ -1,3 +1,54 @@
 <resources>
     <string name="app_name">Skener inventure</string>
+    <string name="ok">U redu</string>
+    <string name="cancel">Odustani</string>
+    <string name="retry">Pokušaj ponovno</string>
+
+    <string name="settings_title">Postavke</string>
+    <string name="settings_url">Poveznica na tablicu</string>
+    <string name="settings_url_hint">Zalijepite poveznicu koju ste dobili od vlasnika tablice</string>
+    <string name="settings_scan_qr">Skeniraj QR kod</string>
+    <string name="settings_name">Vaše ime</string>
+    <string name="settings_language">Jezik</string>
+    <string name="settings_test">Provjeri vezu</string>
+    <string name="settings_testing">Provjeravam…</string>
+    <string name="settings_connected">Povezano s: %1$s</string>
+    <string name="settings_save">Spremi</string>
+    <string name="error_bad_url">Ovo nije ispravna poveznica. Treba počinjati s https://script.google.com/</string>
+    <string name="error_connection">Povezivanje nije uspjelo: %1$s</string>
+    <string name="error_network">Nema internetske veze</string>
+
+    <string name="area_title">Novo područje</string>
+    <string name="area_name">Naziv područja</string>
+    <string name="area_start">Počni skenirati</string>
+
+    <plurals name="scans_count">
+        <item quantity="one">%d skeniran</item>
+        <item quantity="few">%d skenirana</item>
+        <item quantity="other">%d skeniranih</item>
+    </plurals>
+    <string name="scan_list">Skenirano</string>
+    <string name="scan_finish">Završi područje</string>
+    <string name="scan_dup_title">Već skenirano</string>
+    <string name="scan_dup_message">%1$s je već skeniran u ovom području. Dodati ponovno?</string>
+    <string name="scan_dup_add">Dodaj</string>
+    <string name="scan_dup_skip">Preskoči</string>
+    <string name="scan_too_long">Kod je predug, nije spremljen</string>
+    <string name="camera_permission">Kamera je potrebna za skeniranje barkodova.</string>
+    <string name="camera_grant">Dopusti kameru</string>
+
+    <string name="drawer_empty">Još nema skeniranih kodova</string>
+    <string name="delete_title">Obrisati ovaj kod?</string>
+    <string name="delete_confirm">Obriši</string>
+    <string name="abandon">Napusti područje</string>
+    <string name="abandon_title">Napustiti područje?</string>
+    <string name="abandon_message">Obrisati sve skenirane kodove (%1$d) iz ovog područja bez slanja? Ovo se ne može poništiti.</string>
+    <string name="abandon_confirm">Napusti</string>
+
+    <string name="finish_title">Završiti područje?</string>
+    <string name="finish_message">Poslati sve skenirane kodove (%1$d) iz područja „%2$s“ u tablicu?</string>
+    <string name="finish_confirm">Pošalji</string>
+    <string name="uploading">Šaljem…</string>
+    <string name="upload_failed">Slanje nije uspjelo: %1$s\nSkenirani kodovi ostaju spremljeni na mobitelu.</string>
+    <string name="upload_done">Poslano redaka: %1$d</string>
 </resources>
