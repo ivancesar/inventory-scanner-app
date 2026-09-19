@@ -30,3 +30,29 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 ./gradlew testDebugUnitTest lintDebug assembleDebug
 node apps-script/Code.test.js
 ```
+
+## Release APK (for installing on phones)
+
+**One-time:** create a signing key. **Back up `inventory-scanner.jks` and its password somewhere safe.** Every update must be signed with the same key. Without it, users have to uninstall the app, and uninstalling deletes any scans that haven't been uploaded yet.
+
+```bash
+"$JAVA_HOME/bin/keytool" -genkeypair -v -keystore inventory-scanner.jks -alias inventory-scanner -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Then create `keystore.properties` in the repo root. Both files are gitignored and must never be committed:
+
+```properties
+storeFile=inventory-scanner.jks
+storePassword=...
+keyAlias=inventory-scanner
+keyPassword=...
+```
+
+**Build:** `./gradlew assembleRelease` → `app/build/outputs/apk/release/app-release.apk`.
+For each update, raise `versionCode` in `app/build.gradle.kts`.
+
+## Installing on a phone
+
+1. Send `app-release.apk` to the phone (email, Drive, USB).
+2. Open it on the phone. Android will ask you to allow installs from that app (Files, Gmail, Drive…). Allow it, then tap **Install**.
+3. Open **Inventory Scanner**, tap **Scan QR code**, and scan the QR code from the sheet owner (or paste the link). Tap **Test connection**, enter your name, and tap **Save**.

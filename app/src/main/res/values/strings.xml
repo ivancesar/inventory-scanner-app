@@ -51,5 +51,8 @@
     <string name="finish_confirm">Upload</string>
     <string name="uploading">Uploading…</string>
     <string name="upload_failed">Upload failed: %1$s\nYour scans are still saved on this phone.</string>
-    <string name="upload_done">Uploaded %1$d rows</string>
+    <plurals name="upload_done">
+        <item quantity="one">Uploaded %d row</item>
+        <item quantity="other">Uploaded %d rows</item>
+    </plurals>
 </resources>

@@ -130,7 +130,7 @@ fun ScanScreen(store: Store, settings: Settings, onClosed: () -> Unit, onSetting
             result.onSuccess {
                 // Only now, after the server confirmed. Count is ours: the server says 0 for a duplicate retry.
                 store.clear()
-                Toast.makeText(context, res.getString(R.string.upload_done, a.scans.size), Toast.LENGTH_LONG).show()
+                Toast.makeText(context, res.getQuantityString(R.plurals.upload_done, a.scans.size, a.scans.size), Toast.LENGTH_LONG).show()
                 onClosed()
             }.onFailure {
                 uploadError = if (it is IOException) res.getString(R.string.error_network) else it.message.orEmpty()

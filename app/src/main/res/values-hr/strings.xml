@@ -50,5 +50,9 @@
     <string name="finish_confirm">Pošalji</string>
     <string name="uploading">Šaljem…</string>
     <string name="upload_failed">Slanje nije uspjelo: %1$s\nSkenirani kodovi ostaju spremljeni na mobitelu.</string>
-    <string name="upload_done">Poslano redaka: %1$d</string>
+    <plurals name="upload_done">
+        <item quantity="one">Poslan %d redak</item>
+        <item quantity="few">Poslana %d retka</item>
+        <item quantity="other">Poslano %d redaka</item>
+    </plurals>
 </resources>
