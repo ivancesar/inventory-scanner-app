@@ -27,6 +27,13 @@ class RepeatFilterTest {
         assertEquals("A", f.onFrame(a, 2600))
     }
 
+    @Test fun defaultWaitsThreeSeconds() {
+        val f = RepeatFilter()
+        assertEquals("A", f.onFrame(a, 0))
+        assertEquals(null, f.onFrame(a, 2900)) // out of view 2.9 s: still the same scan
+        assertEquals("A", f.onFrame(a, 6000))
+    }
+
     @Test fun differentCodesAreReported() = assertEquals(listOf("A", "B", "A"), run(a, b, a))
 
     @Test fun emptyFramesReportNothing() = assertEquals(listOf(null, null), run(none, none))

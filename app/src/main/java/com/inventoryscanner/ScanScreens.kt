@@ -54,9 +54,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -108,6 +113,7 @@ fun ScanScreen(store: Store, settings: Settings, onSettings: () -> Unit) {
     var rename by remember { mutableStateOf(false) }
     var torch by remember { mutableStateOf(false) }
     var pill by remember { mutableStateOf<Pair<String, Boolean>?>(null) } // code to isDuplicate
+    val pillStyle = remember { settings.pillStyle } // Settings is a separate screen, so read once
     val hasFlash = remember { context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH) }
     val paused = area == null || dup != null || drawer || finish || uploading || uploadError != null || rename
 
@@ -222,19 +228,10 @@ fun ScanScreen(store: Store, settings: Settings, onSettings: () -> Unit) {
                     // No camera behind the New area popup: no permission prompt stealing focus, no stray torch.
                     if (a != null) BarcodeCamera(paused, ::handle, Modifier.fillMaxSize(), torch)
                     pill?.let { (code, isDup) ->
-                        Surface(
+                        ResultPill(
+                            code, isDup, pillStyle,
                             Modifier.align(Alignment.BottomCenter).padding(16.dp).semantics { liveRegion = LiveRegionMode.Polite },
-                            shape = CircleShape,
-                            color = if (isDup) AMBER else Color(0xFF2E7D32),
-                            contentColor = if (isDup) Color.Black else Color.White,
-                        ) {
-                            Text(
-                                if (isDup) code else "✓ $code",
-                                Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
+                        )
                     }
                 }
                 Row(Modifier.fillMaxWidth().height(96.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -424,6 +421,44 @@ private fun AreaNameDialog(
 }
 
 private val AMBER = Color(0xFFFFB300)
+private val BLUE = Color(0xFF1565C0)
+
+/** Scan-result pill colours, picked in Settings. All differ by colour, brightness and symbol. */
+enum class PillStyle(val label: Int, val ok: Color, val okText: Color, val dup: Color, val dupText: Color, val dashed: Boolean = false) {
+    BlueAmber(R.string.pill_blue_amber, BLUE, Color.White, AMBER, Color.Black),
+    WhiteDashedAmber(R.string.pill_white_dashed_amber, Color.White, Color.Black, AMBER, Color.Black, dashed = true),
+    BlueMagenta(R.string.pill_blue_magenta, BLUE, Color.White, Color(0xFFD81B60), Color.White),
+    GreenAmber(R.string.pill_green_amber, Color(0xFF2E7D32), Color.White, AMBER, Color.Black),
+}
+
+/** "✓ code" for a new scan, "⚠ Already scanned" for a duplicate. */
+@Composable
+fun ResultPill(code: String, duplicate: Boolean, style: PillStyle, modifier: Modifier = Modifier) {
+    val dashed = if (style.dashed && duplicate) Modifier.drawWithContent {
+        drawContent()
+        val w = 3.dp.toPx()
+        inset(w / 2) {
+            drawRoundRect(
+                style.dupText, cornerRadius = CornerRadius(size.height / 2),
+                style = Stroke(w, pathEffect = PathEffect.dashPathEffect(floatArrayOf(8.dp.toPx(), 5.dp.toPx()))),
+            )
+        }
+    } else Modifier
+    Surface(
+        modifier.then(dashed),
+        shape = CircleShape,
+        color = if (duplicate) style.dup else style.ok,
+        contentColor = if (duplicate) style.dupText else style.okText,
+    ) {
+        Text(
+            if (duplicate) "⚠ " + stringResource(R.string.scan_dup_title) else "✓ $code",
+            Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+            style = MaterialTheme.typography.titleMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
 private val CONTROL = Color(0xFF2A2A2A)
 private val PILL = RoundedCornerShape(50)
 

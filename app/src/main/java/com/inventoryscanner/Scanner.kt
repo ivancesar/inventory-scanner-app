@@ -122,7 +122,7 @@ fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier 
 }
 
 /** Suppresses repeats: the last reported code is ignored until it has been out of view for quietMs, or a different code is reported. */
-class RepeatFilter(private val quietMs: Long = 1500) { // ponytail: tuning knob
+class RepeatFilter(private val quietMs: Long = 3000) { // ponytail: tuning knob; 1.5 s re-read codes on real phones
     // Reported codes still in view -> when last seen. Usually just the last reported one; with several codes
     // in view together it also keeps the earlier ones, so they don't ping-pong every frame.
     private val held = HashMap<String, Long>()
