@@ -113,7 +113,9 @@ fun ScanScreen(store: Store, settings: Settings, onSettings: () -> Unit) {
     var rename by remember { mutableStateOf(false) }
     var torch by remember { mutableStateOf(false) }
     var pill by remember { mutableStateOf<Pair<String, Boolean>?>(null) } // code to isDuplicate
-    val pillStyle = remember { settings.pillStyle } // Settings is a separate screen, so read once
+    // Settings is a separate screen, so read once.
+    val pillStyle = remember { settings.pillStyle }
+    val repeatMode = remember { settings.repeatMode }
     val hasFlash = remember { context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH) }
     val paused = area == null || dup != null || drawer || finish || uploading || uploadError != null || rename
 
@@ -163,7 +165,7 @@ fun ScanScreen(store: Store, settings: Settings, onSettings: () -> Unit) {
         if (a == null || dup != null || rename || finish || uploading || uploadError != null || drawer) return
         when {
             code.length > MAX_CELL -> Toast.makeText(context, R.string.scan_too_long, Toast.LENGTH_SHORT).show()
-            a.scans.any { it.code == code } -> {
+            repeatMode != RepeatMode.NoLock && a.scans.any { it.code == code } -> {
                 dup = code
                 pill = code to true
                 // A distinct sound too: without VIBRATE, Android 8-10 has no REJECT haptic.
@@ -226,7 +228,7 @@ fun ScanScreen(store: Store, settings: Settings, onSettings: () -> Unit) {
                 }
                 Box(Modifier.weight(1f).fillMaxWidth()) {
                     // No camera behind the New area popup: no permission prompt stealing focus, no stray torch.
-                    if (a != null) BarcodeCamera(paused, ::handle, Modifier.fillMaxSize(), torch)
+                    if (a != null) BarcodeCamera(paused, ::handle, Modifier.fillMaxSize(), torch, repeatMode == RepeatMode.HardLock)
                     pill?.let { (code, isDup) ->
                         ResultPill(
                             code, isDup, pillStyle,

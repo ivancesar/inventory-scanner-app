@@ -84,6 +84,13 @@ class Store(private val file: File) {
 fun Area.rows(user: String): List<List<String>> =
     scans.map { listOf(it.time, it.code, name.trim(), user.trim()) }
 
+/** How the same code scanned again is handled ("Multiple code scans" in Settings). */
+enum class RepeatMode(val label: Int) {
+    HardLock(R.string.repeat_hard), // a code must leave view 3 s before it's read again; warn if already in the area
+    SoftLock(R.string.repeat_soft), // re-read after the 3 s gap even if still in view; always warn
+    NoLock(R.string.repeat_none), // re-read after the 3 s gap; save duplicates without a warning
+}
+
 /** User settings in SharedPreferences. */
 class Settings(private val prefs: SharedPreferences) {
     var url: String
@@ -98,5 +105,8 @@ class Settings(private val prefs: SharedPreferences) {
     var pillStyle: PillStyle
         get() = PillStyle.entries.firstOrNull { it.name == prefs.getString("pillStyle", null) } ?: PillStyle.BlueAmber
         set(v) = prefs.edit { putString("pillStyle", v.name) }
+    var repeatMode: RepeatMode
+        get() = RepeatMode.entries.firstOrNull { it.name == prefs.getString("repeatMode", null) } ?: RepeatMode.HardLock
+        set(v) = prefs.edit { putString("repeatMode", v.name) }
     val configured: Boolean get() = url.isNotBlank() && user.isNotBlank()
 }

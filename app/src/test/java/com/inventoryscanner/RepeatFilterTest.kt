@@ -71,6 +71,23 @@ class RepeatFilterTest {
         assertEquals(listOf(null, null, null, null, null, "4006381333931"), frames.mapIndexed { i, c -> f.onFrame(c, i * 100L) })
     }
 
+    // Soft lock / no lock: a code still in view is read again once the gap is over.
+    @Test fun withoutHoldSameCodeRepeatsAfterGap() {
+        val f = RepeatFilter(1500, gapMs = 3000, confirmFrames = 1)
+        assertEquals("A", f.onFrame(a, 0, holdRepeats = false))
+        assertEquals(null, f.onFrame(a, 2900, holdRepeats = false))
+        assertEquals("A", f.onFrame(a, 3000, holdRepeats = false))
+    }
+
+    // A popup is open: nothing is read, and the gap restarts when it closes.
+    @Test fun pauseRestartsTheGap() {
+        val f = RepeatFilter(1500, gapMs = 3000, confirmFrames = 1)
+        assertEquals(null, f.onFrame(a, 0, paused = true))
+        assertEquals(null, f.onFrame(a, 5000, paused = true))
+        assertEquals(null, f.onFrame(a, 7900)) // 2.9 s after the popup closed
+        assertEquals("A", f.onFrame(a, 8000))
+    }
+
     @Test fun defaultsConfirmThreeFramesAndWaitThreeSeconds() {
         val f = RepeatFilter()
         val reads = (0..2).map { f.onFrame(a, it * 100L) } // A confirmed on its 3rd frame, at 200 ms
