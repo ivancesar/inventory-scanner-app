@@ -168,6 +168,11 @@ fun SettingsScreen(settings: Settings, onDone: () -> Unit) {
             ResultPill("0012345", false, pillStyle)
             ResultPill("", true, pillStyle)
         }
+        var repeatMode by remember { mutableStateOf(settings.repeatMode) }
+        Dropdown(stringResource(R.string.settings_repeat_mode), RepeatMode.entries.map { it to it.label }, repeatMode) {
+            settings.repeatMode = it
+            repeatMode = it
+        }
 
         Button(
             onClick = { settings.url = url.trim(); settings.user = name.trim(); onDone() },

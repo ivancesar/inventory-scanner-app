@@ -67,4 +67,8 @@
     <string name="pill_white_dashed_amber">Bijela i isprekidana jantarna</string>
     <string name="pill_blue_magenta">Plava i magenta</string>
     <string name="pill_green_amber">Zelena i jantarna (izvorna)</string>
+    <string name="settings_repeat_mode">Višestruko skeniranje istog koda</string>
+    <string name="repeat_hard">Čvrsto: blokira ponavljanja, kasnije upozorava</string>
+    <string name="repeat_soft">Meko: dopušta ponavljanja, uvijek upozorava</string>
+    <string name="repeat_none">Bez zaključavanja: dopušta ponavljanja, bez upozorenja</string>
 </resources>

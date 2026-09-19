@@ -54,7 +54,13 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
  * (a dialog is open) — but keep feeding RepeatFilter so the code still in view isn't re-reported the instant pause ends.
  */
 @Composable
-fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier = Modifier, torch: Boolean = false) {
+fun BarcodeCamera(
+    paused: Boolean,
+    onCode: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    torch: Boolean = false,
+    holdRepeats: Boolean = true, // false: a code still in view is read again after the gap
+) {
     val context = LocalContext.current
     val activity = LocalActivity.current
     fun granted() =
@@ -89,6 +95,7 @@ fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier 
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentPaused by rememberUpdatedState(paused)
     val currentOnCode by rememberUpdatedState(onCode)
+    val currentHold by rememberUpdatedState(holdRepeats)
     val controller = remember { LifecycleCameraController(context) }
     // Kept pending until bound; on devices without a flash the returned future just fails, which is fine.
     LaunchedEffect(torch) { controller.enableTorch(torch) }
@@ -99,8 +106,7 @@ fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier 
             main,
             MlKitAnalyzer(listOf(scanner), ImageAnalysis.COORDINATE_SYSTEM_ORIGINAL, main) { result ->
                 val codes = result.getValue(scanner).orEmpty().mapNotNull { it.rawValue?.takeIf(String::isNotEmpty) }
-                val code = filter.onFrame(codes, SystemClock.elapsedRealtime())
-                if (code != null && !currentPaused) currentOnCode(code)
+                filter.onFrame(codes, SystemClock.elapsedRealtime(), currentPaused, currentHold)?.let { currentOnCode(it) }
             },
         )
         controller.bindToLifecycle(lifecycleOwner)
@@ -127,8 +133,8 @@ private val filter = RepeatFilter()
 /**
  * Suppresses repeats and misreads of a moving barcode (e.g. a shorter number from a partial view):
  * - a code only counts once it's read the same in confirmFrames consecutive frames;
- * - nothing is reported within gapMs of the previous report;
- * - each reported code is ignored until it has been out of view for quietMs.
+ * - nothing is reported within gapMs of the previous report, or of the end of a pause;
+ * - with holdRepeats, each reported code is ignored until it has been out of view for quietMs.
  */
 class RepeatFilter(
     private val quietMs: Long = 3000, // ponytail: tuning knob; 1.5 s re-read codes on real phones
@@ -142,15 +148,19 @@ class RepeatFilter(
     private val lastSeen = HashMap<String, Long>()
     private var lastReport: Long? = null
 
-    /** Codes visible in one analyzed frame -> the code to report now, or null. */
-    fun onFrame(codes: List<String>, nowMs: Long): String? {
+    /**
+     * Codes visible in one analyzed frame -> the code to report now, or null. While paused (a popup is
+     * open) nothing is reported and the gap restarts, so closing it doesn't instantly read what's in view.
+     */
+    fun onFrame(codes: List<String>, nowMs: Long, paused: Boolean = false, holdRepeats: Boolean = true): String? {
         lastSeen.values.removeAll { nowMs - it > quietMs }
         for (c in codes) if (c in lastSeen) lastSeen[c] = nowMs
         val visible = codes.toSet()
         streak.keys.retainAll(visible)
         for (c in visible) streak[c] = (streak[c] ?: 0) + 1
+        if (paused) lastReport = nowMs
         if (lastReport?.let { nowMs - it < gapMs } == true) return null
-        val new = codes.firstOrNull { it !in lastSeen && streak.getValue(it) >= confirmFrames } ?: return null
+        val new = codes.firstOrNull { (!holdRepeats || it !in lastSeen) && streak.getValue(it) >= confirmFrames } ?: return null
         lastSeen[new] = nowMs
         lastReport = nowMs
         return new
