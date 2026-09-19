@@ -124,18 +124,35 @@ fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier 
 // doesn't instantly re-read a code that is still in view. Only touched on the main thread.
 private val filter = RepeatFilter()
 
-/** Suppresses repeats: each reported code is ignored until it has been out of view for quietMs. */
-class RepeatFilter(private val quietMs: Long = 3000) { // ponytail: tuning knob; 1.5 s re-read codes on real phones
+/**
+ * Suppresses repeats and misreads of a moving barcode (e.g. a shorter number from a partial view):
+ * - a code only counts once it's read the same in confirmFrames consecutive frames;
+ * - nothing is reported within gapMs of the previous report;
+ * - each reported code is ignored until it has been out of view for quietMs.
+ */
+class RepeatFilter(
+    private val quietMs: Long = 3000, // ponytail: tuning knob; 1.5 s re-read codes on real phones
+    private val gapMs: Long = 3000, // ponytail: tuning knob; hard gap between any two reads
+    private val confirmFrames: Int = 3, // ponytail: tuning knob; ~0.1-0.2 s at typical analysis rates
+) {
+    // Consecutive frames each visible code has been read in; a missed frame starts it over.
+    private val streak = HashMap<String, Int>()
     // Reported codes -> when last seen. Each keeps its own timer: reading another code doesn't
     // re-arm it, so sweeping A -> B -> A doesn't read A twice.
     private val lastSeen = HashMap<String, Long>()
+    private var lastReport: Long? = null
 
     /** Codes visible in one analyzed frame -> the code to report now, or null. */
     fun onFrame(codes: List<String>, nowMs: Long): String? {
         lastSeen.values.removeAll { nowMs - it > quietMs }
         for (c in codes) if (c in lastSeen) lastSeen[c] = nowMs
-        val new = codes.firstOrNull { it !in lastSeen } ?: return null
+        val visible = codes.toSet()
+        streak.keys.retainAll(visible)
+        for (c in visible) streak[c] = (streak[c] ?: 0) + 1
+        if (lastReport?.let { nowMs - it < gapMs } == true) return null
+        val new = codes.firstOrNull { it !in lastSeen && streak.getValue(it) >= confirmFrames } ?: return null
         lastSeen[new] = nowMs
+        lastReport = nowMs
         return new
     }
 }
