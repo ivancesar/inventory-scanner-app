@@ -49,7 +49,7 @@ Standard check for every task: `./gradlew testDebugUnitTest lintDebug assembleDe
   - Verify: manual in airplane mode (error, data kept) and online.
   - Files: `MainActivity.kt`, `strings.xml` ×2
 
-- [ ] **CP2** *(emulator pass done: first-run gate, EN↔HR switch persisting after force-stop on API 30, bad-link rejection, resume after kill, drawer delete, finish failure keeps data, abandon, new area. Still needs a real sheet + phone.)* — **you:** deploy the test sheet script and send me the URL. Full flow on a real phone. Check Success Criteria 1–9 and 11–13.
+- [ ] **CP2** *(emulator pass done: first-run gate, EN↔HR switch persisting after force-stop on API 30, bad-link rejection, resume after kill, drawer delete, finish failure keeps data, abandon, new area. Real sheet: curl GET/POST/duplicate/validation OK; app Test connection + Finish upload OK from emulator. Still needs a phone for real barcodes, beep/haptic, QR.)* — **you:** deploy the test sheet script and send me the URL. Full flow on a real phone. Check Success Criteria 1–9 and 11–13.
 
 - [x] **10. QR option in Settings**
   - Acceptance: a "Scan QR" button opens the camera; the first QR code containing an `https://script.google.com/` URL fills the URL field and runs the connection test.
