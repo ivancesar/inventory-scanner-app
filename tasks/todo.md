@@ -74,3 +74,9 @@ Coordinator prep (done on `main` before the agents): 5 Tabler vector drawables, 
   - Acceptance: Language and Theme (System/Light/Dark) as `ExposedDropdownMenuBox` dropdowns built from lists; both apply immediately; the theme is saved in `Settings.nightMode`.
   - Verify: same; emulator check that the theme flips and survives a force-stop.
 - [ ] **14. Merge, emulator check, SPEC update** (coordinator)
+
+## Area popup + unified controls (branch `feature/area-popup-unified-controls`)
+
+- [x] **15. New area popup** — replaces the New area page; same popup design as Rename; can't be dismissed without a name, Settings is the other button.
+- [x] **16. Unified scan-screen controls** — one style (48dp, #2A2A2A, white 22dp icons; circles or pills); torch hidden without a flash.
+- [x] **17. Code-review fixes** — Theme dropdown state; nav-bar scrim on API < 29; live-state guard in `handle()`; distinct duplicate tone; rename focus inside the dialog; dropdown fallback; `Store.rename` rejects blank names; result pill is a live region. The upload-batch fix was dropped by decision (see SPEC assumption 9).

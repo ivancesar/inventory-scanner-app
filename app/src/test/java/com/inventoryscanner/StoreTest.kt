@@ -2,6 +2,7 @@ package com.inventoryscanner
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -42,6 +43,7 @@ class StoreTest {
         val store = Store(file)
         val started = store.start("A")
         store.add("a", "t"); store.add("b", "t")
+        assertThrows(IllegalArgumentException::class.java) { store.rename("  ") }
         store.rename("  B ")
         store.add("c", "t")
         val loaded = Store(file).load()!!

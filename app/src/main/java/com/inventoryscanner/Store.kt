@@ -58,6 +58,7 @@ class Store(private val file: File) {
     }
 
     fun rename(name: String): Area {
+        require(name.isNotBlank()) { "Blank area name" }
         val area = checkNotNull(load()) { "No open area" }
         return area.copy(name = name.trim()).also(::rewrite)
     }

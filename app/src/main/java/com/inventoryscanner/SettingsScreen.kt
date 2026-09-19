@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -141,9 +142,12 @@ fun SettingsScreen(settings: Settings, onDone: () -> Unit) {
         Dropdown(stringResource(R.string.settings_language), LANGUAGES, LANGUAGES.firstOrNull { it.first == lang }?.first ?: "en") {
             AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(it))
         }
-        // Applies at once (recreates the Activity), independent of Save.
-        Dropdown(stringResource(R.string.settings_theme), THEMES, settings.nightMode) {
+        // Applies at once, independent of Save. Compose state: AppCompat only recreates the
+        // Activity when the effective mode changes (System -> Dark on a dark phone doesn't).
+        var nightMode by remember { mutableIntStateOf(settings.nightMode) }
+        Dropdown(stringResource(R.string.settings_theme), THEMES, nightMode) {
             settings.nightMode = it
+            nightMode = it
             AppCompatDelegate.setDefaultNightMode(it)
         }
 
@@ -166,7 +170,7 @@ private fun <T> Dropdown(label: String, options: List<Pair<T, Int>>, selected: T
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded, { expanded = it }) {
         OutlinedTextField(
-            value = stringResource(options.first { it.first == selected }.second),
+            value = stringResource((options.firstOrNull { it.first == selected } ?: options.first()).second),
             onValueChange = {},
             readOnly = true,
             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).then(BIG),
