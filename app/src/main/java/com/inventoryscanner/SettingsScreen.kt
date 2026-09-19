@@ -3,6 +3,9 @@ package com.inventoryscanner
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,12 +17,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -130,18 +135,15 @@ fun SettingsScreen(settings: Settings, onDone: () -> Unit) {
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
         )
 
-        Text(stringResource(R.string.settings_language))
         // The effective locale: the app language if one was chosen, else the system's.
-        val current = if (LocalLocale.current.platformLocale.language == "hr") "hr" else "en"
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            listOf("en" to R.string.lang_en, "hr" to R.string.lang_hr).forEachIndexed { i, (tag, label) ->
-                SegmentedButton(
-                    selected = current == tag,
-                    onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag)) },
-                    shape = SegmentedButtonDefaults.itemShape(i, 2),
-                    modifier = Modifier.heightIn(min = 56.dp),
-                ) { Text(stringResource(label)) }
-            }
+        val lang = LocalLocale.current.platformLocale.language
+        Dropdown(stringResource(R.string.settings_language), LANGUAGES, LANGUAGES.firstOrNull { it.first == lang }?.first ?: "en") {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(it))
+        }
+        // Applies at once (recreates the Activity), independent of Save.
+        Dropdown(stringResource(R.string.settings_theme), THEMES, settings.nightMode) {
+            settings.nightMode = it
+            AppCompatDelegate.setDefaultNightMode(it)
         }
 
         Button(
@@ -150,6 +152,31 @@ fun SettingsScreen(settings: Settings, onDone: () -> Unit) {
             enabled = connected && !testing && name.isNotBlank(),
         ) { Text(stringResource(R.string.settings_save)) }
         if (settings.configured) TextButton(onDone, BIG) { Text(stringResource(R.string.cancel)) }
+    }
+}
+
+// A new language also needs values-xx/strings.xml, res/xml/locales_config.xml and localeFilters in app/build.gradle.kts.
+private val LANGUAGES = listOf("en" to R.string.lang_en, "hr" to R.string.lang_hr)
+private val THEMES = listOf(MODE_NIGHT_FOLLOW_SYSTEM to R.string.theme_system, MODE_NIGHT_NO to R.string.theme_light, MODE_NIGHT_YES to R.string.theme_dark)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> Dropdown(label: String, options: List<Pair<T, Int>>, selected: T, onSelect: (T) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded, { expanded = it }) {
+        OutlinedTextField(
+            value = stringResource(options.first { it.first == selected }.second),
+            onValueChange = {},
+            readOnly = true,
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).then(BIG),
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+        )
+        ExposedDropdownMenu(expanded, { expanded = false }) {
+            options.forEach { (value, text) ->
+                DropdownMenuItem({ Text(stringResource(text)) }, onClick = { expanded = false; onSelect(value) })
+            }
+        }
     }
 }
 
