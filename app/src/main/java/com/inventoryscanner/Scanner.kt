@@ -47,7 +47,7 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
  * (a dialog is open) — but keep feeding RepeatFilter so the code still in view isn't re-reported the instant pause ends.
  */
 @Composable
-fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier = Modifier) {
+fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier = Modifier, torch: Boolean = false) {
     val context = LocalContext.current
     val activity = LocalActivity.current
     fun granted() =
@@ -83,6 +83,8 @@ fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier 
     val currentPaused by rememberUpdatedState(paused)
     val currentOnCode by rememberUpdatedState(onCode)
     val controller = remember { LifecycleCameraController(context) }
+    // Kept pending until bound; on devices without a flash the returned future just fails, which is fine.
+    LaunchedEffect(torch) { controller.enableTorch(torch) }
     DisposableEffect(lifecycleOwner) {
         val scanner = BarcodeScanning.getClient()
         val filter = RepeatFilter()
