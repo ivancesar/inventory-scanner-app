@@ -5,32 +5,49 @@ import android.media.ToneGenerator
 import android.os.Build
 import android.view.HapticFeedbackConstants
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,18 +56,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -99,6 +122,29 @@ fun ScanScreen(store: Store, settings: Settings, onClosed: () -> Unit, onSetting
     var finish by remember { mutableStateOf(false) }
     var uploading by remember { mutableStateOf(false) }
     var uploadError by remember { mutableStateOf<String?>(null) }
+    var rename by remember { mutableStateOf(false) }
+    var torch by remember { mutableStateOf(false) }
+    var pill by remember { mutableStateOf<Pair<String, Boolean>?>(null) } // code to isDuplicate
+    val paused = dup != null || drawer || finish || uploading || uploadError != null || rename
+
+    // Hide the pill after a moment, but keep the amber one while the duplicate dialog is open.
+    LaunchedEffect(pill, dup) { if (pill != null && dup == null) { delay(1500); pill = null } }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { torch = false }
+
+    // White status/nav bar icons over the black bars; restore the theme's choice on leaving.
+    val window = LocalActivity.current?.window
+    DisposableEffect(window) {
+        val bars = window?.let { WindowCompat.getInsetsController(it, view) }
+        val light = bars?.run { isAppearanceLightStatusBars to isAppearanceLightNavigationBars }
+        bars?.isAppearanceLightStatusBars = false
+        bars?.isAppearanceLightNavigationBars = false
+        onDispose {
+            if (bars != null && light != null) {
+                bars.isAppearanceLightStatusBars = light.first
+                bars.isAppearanceLightNavigationBars = light.second
+            }
+        }
+    }
 
     // Throws on some devices when audio can't init; a missing beep beats a crash.
     val tone = remember { runCatching { ToneGenerator(AudioManager.STREAM_NOTIFICATION, 80) }.getOrNull() }
@@ -111,12 +157,19 @@ fun ScanScreen(store: Store, settings: Settings, onClosed: () -> Unit, onSetting
         view.performHapticFeedback(
             if (Build.VERSION.SDK_INT >= 30) HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.LONG_PRESS
         )
+        pill = code to false
     }
 
     fun handle(code: String) {
         when {
             code.length > MAX_CELL -> Toast.makeText(context, R.string.scan_too_long, Toast.LENGTH_SHORT).show()
-            area.scans.any { it.code == code } -> dup = code
+            area.scans.any { it.code == code } -> {
+                dup = code
+                pill = code to true
+                view.performHapticFeedback(
+                    if (Build.VERSION.SDK_INT >= 30) HapticFeedbackConstants.REJECT else HapticFeedbackConstants.LONG_PRESS
+                )
+            }
             else -> save(code)
         }
     }
@@ -138,23 +191,76 @@ fun ScanScreen(store: Store, settings: Settings, onClosed: () -> Unit, onSetting
         }
     }
 
-    Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-        Row(Modifier.padding(start = 16.dp, top = 8.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(area.name, style = MaterialTheme.typography.titleLarge)
-                Text(pluralStringResource(R.plurals.scans_count, area.scans.size, area.scans.size))
-            }
-            SettingsButton(onSettings)
-        }
-        BarcodeCamera(
-            paused = dup != null || drawer || finish || uploading || uploadError != null,
-            onCode = ::handle,
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-        )
-        Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            OutlinedButton({ drawer = true }, Modifier.weight(1f)) { Text(stringResource(R.string.scan_list)) }
-            Button({ finish = true }, Modifier.weight(1f), enabled = area.scans.isNotEmpty()) {
-                Text(stringResource(R.string.scan_finish))
+    val n = area.scans.size
+    // Always dark like a camera app; the drawer and dialogs below stay outside and follow the app theme.
+    MaterialTheme(colorScheme = darkColorScheme()) {
+        Surface(Modifier.fillMaxSize(), color = Color.Black, contentColor = Color.White) {
+            Column(Modifier.fillMaxSize().safeDrawingPadding()) {
+                Row(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    IconToggleButton(
+                        torch, { torch = it },
+                        colors = IconButtonDefaults.iconToggleButtonColors(checkedContentColor = AMBER),
+                    ) { Icon(painterResource(R.drawable.ic_torch), stringResource(R.string.torch)) }
+                    Surface(
+                        onClick = { rename = true },
+                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                        shape = CircleShape,
+                        color = Color(0xE6202020),
+                    ) {
+                        Row(
+                            Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(area.name, Modifier.weight(1f, fill = false), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Icon(painterResource(R.drawable.ic_pencil), stringResource(R.string.rename_title), Modifier.size(18.dp))
+                        }
+                    }
+                    SettingsButton(onSettings)
+                }
+                Box(Modifier.weight(1f).fillMaxWidth()) {
+                    BarcodeCamera(paused, ::handle, Modifier.fillMaxSize(), torch)
+                    Box(
+                        Modifier.align(Alignment.Center).fillMaxWidth(0.7f).aspectRatio(1.6f)
+                            .border(2.dp, Color.White.copy(alpha = .8f), RoundedCornerShape(12.dp))
+                    )
+                    pill?.let { (code, isDup) ->
+                        Surface(
+                            Modifier.align(Alignment.BottomCenter).padding(16.dp),
+                            shape = CircleShape,
+                            color = if (isDup) AMBER else Color(0xFF2E7D32),
+                            contentColor = if (isDup) Color.Black else Color.White,
+                        ) {
+                            Text(
+                                if (isDup) code else "✓ $code",
+                                Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                }
+                Row(Modifier.fillMaxWidth().height(96.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    IconButton({ drawer = true }) {
+                        BadgedBox(badge = {
+                            if (n > 0) Badge(containerColor = Color.White, contentColor = Color.Black) {
+                                Text("$n", Modifier.clearAndSetSemantics {}) // already in the icon's description
+                            }
+                        }) {
+                            Icon(painterResource(R.drawable.ic_clipboard_list), pluralStringResource(R.plurals.scans_count, n, n))
+                        }
+                    }
+                    Spacer(Modifier.weight(1f)) // empty on purpose: nothing that looks like a shutter
+                    Button(
+                        { finish = true },
+                        enabled = n > 0,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
+                    ) {
+                        Icon(painterResource(R.drawable.ic_cloud_upload), null, Modifier.size(ButtonDefaults.IconSize))
+                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                        Text(stringResource(R.string.scan_finish))
+                    }
+                }
             }
         }
     }
@@ -186,11 +292,34 @@ fun ScanScreen(store: Store, settings: Settings, onClosed: () -> Unit, onSetting
 
     dup?.let { code ->
         AlertDialog(
-            onDismissRequest = { dup = null },
+            onDismissRequest = { dup = null; pill = null },
             title = { Text(stringResource(R.string.scan_dup_title)) },
             text = { Text(stringResource(R.string.scan_dup_message, code)) },
             confirmButton = { TextButton({ dup = null; save(code) }) { Text(stringResource(R.string.scan_dup_add)) } },
-            dismissButton = { TextButton({ dup = null }) { Text(stringResource(R.string.scan_dup_skip)) } },
+            dismissButton = { TextButton({ dup = null; pill = null }) { Text(stringResource(R.string.scan_dup_skip)) } },
+        )
+    }
+
+    if (rename) {
+        var text by remember { mutableStateOf(area.name) }
+        AlertDialog(
+            onDismissRequest = { rename = false },
+            title = { Text(stringResource(R.string.rename_title)) },
+            text = {
+                OutlinedTextField(
+                    text,
+                    { text = it.take(MAX_CELL) },
+                    label = { Text(stringResource(R.string.area_name)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(KeyboardCapitalization.Sentences),
+                )
+            },
+            confirmButton = {
+                TextButton({ area = store.rename(text); rename = false }, enabled = text.isNotBlank()) {
+                    Text(stringResource(R.string.settings_save))
+                }
+            },
+            dismissButton = { TextButton({ rename = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 
@@ -257,8 +386,9 @@ fun ScanScreen(store: Store, settings: Settings, onClosed: () -> Unit, onSetting
     }
 }
 
+private val AMBER = Color(0xFFFFB300)
+
 @Composable
 private fun SettingsButton(onClick: () -> Unit) {
-    val label = stringResource(R.string.settings_title)
-    IconButton(onClick, Modifier.semantics { contentDescription = label }) { Text("⚙") }
+    IconButton(onClick) { Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title)) }
 }
