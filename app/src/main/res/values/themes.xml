@@ -1,0 +1,4 @@
+<resources>
+    <!-- AppCompat theme: AppCompatActivity requires it, and it applies the per-app language below Android 13. -->
+    <style name="Theme.InventoryScanner" parent="Theme.AppCompat.DayNight.NoActionBar" />
+</resources>
