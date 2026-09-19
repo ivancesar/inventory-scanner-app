@@ -47,7 +47,7 @@ A simple Android app for non-technical users. They scan barcodes one "area" at a
 | Navigation | One `screen` state variable in the Activity; scan list is a Compose `ModalBottomSheet` drawer | 3 screens don't need a nav library |
 | Language | `strings.xml` (default EN) + `values-hr/strings.xml`; `AppCompatDelegate.setApplicationLocales` | Built-in per-app language, persisted by AppCompat |
 | Camera + decoding | CameraX `LifecycleCameraController` + ML Kit `barcode-scanning` (bundled model) via `camera-mlkit-vision` `MlKitAnalyzer` | Continuous scanning, works offline, no Play Services download |
-| Local storage | `SharedPreferences` for settings and the current area; append-only JSON-lines file in `filesDir` for pending scans | Survives process death with no database |
+| Local storage | `SharedPreferences` for settings; one JSON-lines file in `filesDir` for the open area (header line) and its scans | Survives process death with no database |
 | HTTP | `HttpURLConnection` + `org.json` (both in the platform) | No networking dependency needed for one POST |
 | Sheet side | Google Apps Script (`doGet` / `doPost`) | No OAuth, no GCP project |
 | Build | Gradle wrapper, AGP + Kotlin at current stable; compileSdk/targetSdk = latest stable | |

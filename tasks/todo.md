@@ -13,7 +13,7 @@ Standard check for every task: `./gradlew testDebugUnitTest lintDebug assembleDe
   - Files: `apps-script/Code.gs`, `apps-script/Code.test.js`, `README.md`
 
 - [x] **3. Store + row building (TDD)**
-  - Acceptance: settings (URL, name) and the current area (name, batchId) are saved in prefs; scans are appended to JSONL; delete one scan; clear on finish or abandon; data survives a new `Store` instance; `rows()` returns `[time, code, area, user]` with trimmed values.
+  - Acceptance: settings (URL, name) in prefs; the open area (name, batchId) and its scans in one JSONL file; delete one scan; clear on finish or abandon; data survives a new `Store` instance; `rows()` returns `[time, code, area, user]` with trimmed values.
   - Verify: `StoreTest` passes.
   - Files: `Store.kt`, `StoreTest.kt`
 
