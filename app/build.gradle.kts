@@ -40,6 +40,13 @@ dependencies {
     implementation(libs.activity.compose)
     // Per-app language (setApplicationLocales), backported below Android 13.
     implementation(libs.appcompat)
+    implementation(libs.camera.camera2)
+    implementation(libs.camera.view)
+    implementation(libs.camera.mlkit.vision)
+    // Bundled model: works offline, no Play Services download on first scan.
+    implementation(libs.mlkit.barcode)
 
     testImplementation(libs.junit)
+    // Real org.json on the JVM test classpath; android.jar only has stubs.
+    testImplementation(libs.org.json)
 }
