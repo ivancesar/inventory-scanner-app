@@ -13,7 +13,14 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.mlkit.vision.MlKitAnalyzer
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -104,7 +111,14 @@ fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier 
             scanner.close()
         }
     }
-    AndroidView({ PreviewView(it).apply { this.controller = controller } }, modifier)
+    Box(modifier) {
+        AndroidView({ PreviewView(it).apply { this.controller = controller } }, Modifier.fillMaxSize())
+        // Aiming frame; only drawn with the preview, never over the permission prompt.
+        Box(
+            Modifier.align(Alignment.Center).fillMaxWidth(0.7f).aspectRatio(1.6f)
+                .border(2.dp, Color.White.copy(alpha = .8f), RoundedCornerShape(12.dp))
+        )
+    }
 }
 
 /** Suppresses repeats: the last reported code is ignored until it has been out of view for quietMs, or a different code is reported. */

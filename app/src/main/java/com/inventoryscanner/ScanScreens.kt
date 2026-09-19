@@ -6,14 +6,12 @@ import android.os.Build
 import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
-import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -56,6 +54,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -220,10 +222,6 @@ fun ScanScreen(store: Store, settings: Settings, onClosed: () -> Unit, onSetting
                 }
                 Box(Modifier.weight(1f).fillMaxWidth()) {
                     BarcodeCamera(paused, ::handle, Modifier.fillMaxSize(), torch)
-                    Box(
-                        Modifier.align(Alignment.Center).fillMaxWidth(0.7f).aspectRatio(1.6f)
-                            .border(2.dp, Color.White.copy(alpha = .8f), RoundedCornerShape(12.dp))
-                    )
                     pill?.let { (code, isDup) ->
                         Surface(
                             Modifier.align(Alignment.BottomCenter).padding(16.dp),
@@ -241,13 +239,20 @@ fun ScanScreen(store: Store, settings: Settings, onClosed: () -> Unit, onSetting
                     }
                 }
                 Row(Modifier.fillMaxWidth().height(96.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    IconButton({ drawer = true }) {
-                        BadgedBox(badge = {
-                            if (n > 0) Badge(containerColor = Color.White, contentColor = Color.Black) {
-                                Text("$n", Modifier.clearAndSetSemantics {}) // already in the icon's description
+                    BadgedBox(badge = {
+                        if (n > 0) Badge(containerColor = Color.White, contentColor = Color.Black) {
+                            Text("$n", Modifier.clearAndSetSemantics {}) // already in the icon's description
+                        }
+                    }) {
+                        // Dark tile, like a camera app's gallery thumbnail.
+                        Surface({ drawer = true }, Modifier.size(56.dp), shape = RoundedCornerShape(14.dp), color = Color(0xFF2A2A2A)) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    painterResource(R.drawable.ic_clipboard_list),
+                                    pluralStringResource(R.plurals.scans_count, n, n),
+                                    Modifier.size(28.dp),
+                                )
                             }
-                        }) {
-                            Icon(painterResource(R.drawable.ic_clipboard_list), pluralStringResource(R.plurals.scans_count, n, n))
                         }
                     }
                     Spacer(Modifier.weight(1f)) // empty on purpose: nothing that looks like a shutter
@@ -301,21 +306,25 @@ fun ScanScreen(store: Store, settings: Settings, onClosed: () -> Unit, onSetting
     }
 
     if (rename) {
-        var text by remember { mutableStateOf(area.name) }
+        // Whole name selected and focused, so typing replaces it and a tap can place the cursor.
+        var text by remember { mutableStateOf(TextFieldValue(area.name, TextRange(0, area.name.length))) }
+        val focus = remember { FocusRequester() }
+        LaunchedEffect(Unit) { focus.requestFocus() }
         AlertDialog(
             onDismissRequest = { rename = false },
             title = { Text(stringResource(R.string.rename_title)) },
             text = {
                 OutlinedTextField(
                     text,
-                    { text = it.take(MAX_CELL) },
+                    { text = if (it.text.length > MAX_CELL) it.copy(text = it.text.take(MAX_CELL)) else it },
+                    Modifier.focusRequester(focus),
                     label = { Text(stringResource(R.string.area_name)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(KeyboardCapitalization.Sentences),
                 )
             },
             confirmButton = {
-                TextButton({ area = store.rename(text); rename = false }, enabled = text.isNotBlank()) {
+                TextButton({ area = store.rename(text.text); rename = false }, enabled = text.text.isNotBlank()) {
                     Text(stringResource(R.string.settings_save))
                 }
             },

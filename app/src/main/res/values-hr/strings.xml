@@ -27,7 +27,6 @@
         <item quantity="few">%d skenirana</item>
         <item quantity="other">%d skeniranih</item>
     </plurals>
-    <string name="scan_list">Skenirano</string>
     <string name="scan_finish">Završi</string>
     <string name="scan_dup_title">Već skenirano</string>
     <string name="scan_dup_message">%1$s je već skeniran u ovom području. Dodati ponovno?</string>

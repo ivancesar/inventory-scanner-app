@@ -28,7 +28,6 @@
         <item quantity="one">%d scanned</item>
         <item quantity="other">%d scanned</item>
     </plurals>
-    <string name="scan_list">Scans</string>
     <string name="scan_finish">Finish</string>
     <string name="scan_dup_title">Already scanned</string>
     <string name="scan_dup_message">%1$s is already scanned in this area. Add it again?</string>

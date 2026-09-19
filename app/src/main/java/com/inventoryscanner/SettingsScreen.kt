@@ -58,7 +58,8 @@ fun SettingsScreen(settings: Settings, onDone: () -> Unit) {
     // Saveable: a language switch recreates the Activity.
     var url by rememberSaveable { mutableStateOf(settings.url) }
     var name by rememberSaveable { mutableStateOf(settings.user) }
-    var testedUrl by rememberSaveable { mutableStateOf("") } // last url that passed the test
+    // Last url that passed the test; the saved one already did, so editing only the name needs no re-test.
+    var testedUrl by rememberSaveable { mutableStateOf(settings.url) }
     var sheet by rememberSaveable { mutableStateOf("") }
     var scanning by rememberSaveable { mutableStateOf(false) }
     var testing by remember { mutableStateOf(false) }
@@ -122,7 +123,7 @@ fun SettingsScreen(settings: Settings, onDone: () -> Unit) {
         OutlinedButton(::test, BIG, enabled = !testing) { Text(stringResource(R.string.settings_test)) }
         when {
             testing -> Text(stringResource(R.string.settings_testing))
-            connected -> Text(stringResource(R.string.settings_connected, sheet), color = MaterialTheme.colorScheme.primary)
+            connected && sheet.isNotEmpty() -> Text(stringResource(R.string.settings_connected, sheet), color = MaterialTheme.colorScheme.primary)
             error.isNotEmpty() -> Text(error, color = MaterialTheme.colorScheme.error)
         }
 
