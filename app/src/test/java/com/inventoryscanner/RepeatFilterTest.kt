@@ -34,7 +34,18 @@ class RepeatFilterTest {
         assertEquals("A", f.onFrame(a, 6000))
     }
 
-    @Test fun differentCodesAreReported() = assertEquals(listOf("A", "B", "A"), run(a, b, a))
+    @Test fun differentCodesAreReported() = assertEquals(listOf("A", "B"), run(a, b).filterNotNull())
+
+    // Regression: reading B used to re-arm A, so sweeping between two nearby codes re-read A at once.
+    @Test fun anotherCodeDoesNotRearm() = assertEquals(listOf("A", "B", null, null, null), run(a, b, a, b, a))
+
+    @Test fun eachCodeKeepsItsOwnTimer() {
+        val f = RepeatFilter(1500)
+        assertEquals("A", f.onFrame(a, 0))
+        assertEquals("B", f.onFrame(b, 1000)) // A last seen at 0
+        assertEquals("A", f.onFrame(a, 1600)) // A out of view > 1.5 s: a new scan
+        assertEquals(null, f.onFrame(b, 2000)) // B still within its wait
+    }
 
     @Test fun emptyFramesReportNothing() = assertEquals(listOf(null, null), run(none, none))
 

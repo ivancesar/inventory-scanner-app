@@ -83,5 +83,5 @@ Coordinator prep (done on `main` before the agents): 5 Tabler vector drawables, 
 
 ## Phone-test fixes (branch `fix/scan-repeats-and-pill-styles`)
 
-- [x] **18. Fewer repeat reads** — `RepeatFilter` waits 3 s (was 1.5 s) before re-reading a code that left the view; tuning knob in `Scanner.kt`.
+- [x] **18. Fewer repeat reads** — `RepeatFilter` waits 3 s (was 1.5 s) before re-reading a code that left the view (tuning knob in `Scanner.kt`). Each code keeps its own timer (reading another code used to cancel it), and the filter survives camera restarts (Settings, New area popup).
 - [x] **19. Scan-result colour styles** — Settings dropdown "Scan result colours" with a live preview: Blue and amber (default), White and dashed amber, Blue and magenta, Green and amber (original). All styles use ✓ / ⚠ symbols and bigger text; the duplicate pill says "Already scanned".

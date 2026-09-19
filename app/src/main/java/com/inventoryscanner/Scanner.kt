@@ -94,7 +94,6 @@ fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier 
     LaunchedEffect(torch) { controller.enableTorch(torch) }
     DisposableEffect(lifecycleOwner) {
         val scanner = BarcodeScanning.getClient()
-        val filter = RepeatFilter()
         val main = ContextCompat.getMainExecutor(context)
         controller.setImageAnalysisAnalyzer(
             main,
@@ -121,19 +120,22 @@ fun BarcodeCamera(paused: Boolean, onCode: (String) -> Unit, modifier: Modifier 
     }
 }
 
-/** Suppresses repeats: the last reported code is ignored until it has been out of view for quietMs, or a different code is reported. */
+// One filter for every camera session, so coming back from Settings or the New area popup
+// doesn't instantly re-read a code that is still in view. Only touched on the main thread.
+private val filter = RepeatFilter()
+
+/** Suppresses repeats: each reported code is ignored until it has been out of view for quietMs. */
 class RepeatFilter(private val quietMs: Long = 3000) { // ponytail: tuning knob; 1.5 s re-read codes on real phones
-    // Reported codes still in view -> when last seen. Usually just the last reported one; with several codes
-    // in view together it also keeps the earlier ones, so they don't ping-pong every frame.
-    private val held = HashMap<String, Long>()
+    // Reported codes -> when last seen. Each keeps its own timer: reading another code doesn't
+    // re-arm it, so sweeping A -> B -> A doesn't read A twice.
+    private val lastSeen = HashMap<String, Long>()
 
     /** Codes visible in one analyzed frame -> the code to report now, or null. */
     fun onFrame(codes: List<String>, nowMs: Long): String? {
-        held.values.removeAll { nowMs - it > quietMs }
-        for (c in codes) if (c in held) held[c] = nowMs
-        val new = codes.firstOrNull { it !in held } ?: return null
-        held.keys.retainAll(codes.toSet()) // codes out of view when another is reported are re-armed
-        held[new] = nowMs
+        lastSeen.values.removeAll { nowMs - it > quietMs }
+        for (c in codes) if (c in lastSeen) lastSeen[c] = nowMs
+        val new = codes.firstOrNull { it !in lastSeen } ?: return null
+        lastSeen[new] = nowMs
         return new
     }
 }
