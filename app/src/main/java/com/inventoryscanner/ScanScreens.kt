@@ -49,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,6 +75,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -217,7 +219,8 @@ fun ScanScreen(store: Store, settings: Settings, onSettings: () -> Unit) {
                     CircleButton(R.drawable.ic_settings, stringResource(R.string.settings_title), Modifier.clickable(role = Role.Button, onClick = onSettings))
                 }
                 Box(Modifier.weight(1f).fillMaxWidth()) {
-                    BarcodeCamera(paused, ::handle, Modifier.fillMaxSize(), torch)
+                    // No camera behind the New area popup: no permission prompt stealing focus, no stray torch.
+                    if (a != null) BarcodeCamera(paused, ::handle, Modifier.fillMaxSize(), torch)
                     pill?.let { (code, isDup) ->
                         Surface(
                             Modifier.align(Alignment.BottomCenter).padding(16.dp).semantics { liveRegion = LiveRegionMode.Polite },
@@ -269,9 +272,10 @@ fun ScanScreen(store: Store, settings: Settings, onSettings: () -> Unit) {
     }
 
     if (a == null) {
+        val activity = LocalActivity.current
         AreaNameDialog(
-            R.string.area_title, "", R.string.area_start, { area = store.start(it) },
-            R.string.settings_title, onSettings, dismissable = false,
+            R.string.area_title, "", R.string.area_start, { if (area == null) area = store.start(it) }, // double confirm
+            R.string.settings_title, onSettings, onBack = { activity?.finish() },
         )
         return
     }
@@ -390,14 +394,16 @@ private fun AreaNameDialog(
     onConfirm: (String) -> Unit,
     dismissText: Int,
     onDismiss: () -> Unit,
-    dismissable: Boolean = true,
+    onBack: (() -> Unit)? = null, // set = back runs this and outside taps are ignored
 ) {
     // Whole name selected, so typing replaces it and a tap can place the cursor.
-    var text by remember { mutableStateOf(TextFieldValue(initial, TextRange(0, initial.length))) }
+    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(initial, TextRange(0, initial.length)))
+    }
     val confirm = { if (text.text.isNotBlank()) onConfirm(text.text) }
     AlertDialog(
-        // Not dismissable = back and outside taps are swallowed.
-        onDismissRequest = { if (dismissable) onDismiss() },
+        onDismissRequest = onBack ?: onDismiss,
+        properties = DialogProperties(dismissOnClickOutside = onBack == null),
         title = { Text(stringResource(title)) },
         text = {
             val focus = remember { FocusRequester() }
