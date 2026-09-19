@@ -14,11 +14,13 @@ How might we make scanning feel like using the phone's camera app: point at a ba
 
 **Area handling:**
 - Tapping the area pill opens a **Rename area** modal (text field, Cancel/Save). The scans are kept; the new name applies when uploading.
-- The **New area** screen stays. It appears whenever no area is open (first use, or after Finish or Abandon), and it follows the Light/Dark theme.
+- **New area** is a popup with the same design as Rename. It appears over the camera screen whenever no area is open (first use, or after Finish or Abandon). It can't be dismissed without a name; its other button opens Settings.
 
 **Settings:**
 - **Language** becomes a dropdown, so more languages can be added later.
-- A new **Theme** dropdown offers System (the default), Light and Dark. It applies to Settings, New area, the scans list and dialogs. The camera screen is always dark.
+- A new **Theme** dropdown offers System (the default), Light and Dark. It applies to Settings, the scans list and popups. The camera screen is always dark.
+
+**Unified controls:** all five scan-screen controls share one style: 48dp tall, dark grey (#2A2A2A) background, white 22dp icons. Icon-only controls are circles; controls with text are pills. Colour only signals status: the amber torch when on, the white count badge, and the green or amber result pills.
 
 ## Key assumptions to validate
 - [ ] **Users find Finish at bottom right without any hint.** Check on the phone test: hand the phone to someone and ask them to "send the scans".
@@ -32,7 +34,7 @@ How might we make scanning feel like using the phone's camera app: point at a ba
 - The scan-result pill.
 - The torch.
 - The Language and Theme dropdowns, with the theme saved like the other settings.
-- The New area screen with theming.
+- The New area popup.
 - New strings in English and Croatian.
 
 **Out:** everything in the next section.

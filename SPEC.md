@@ -11,8 +11,8 @@ A simple Android app for non-technical users. They scan barcodes one "area" at a
 **Flow**
 1. User opens the app.
 2. **First run only:** Settings screen. User connects the sheet (scans the setup QR code or pastes the link) and enters their name. The app tests the connection and shows the sheet's name before allowing Save.
-3. **Area screen:** user types a name for the scanning area.
-4. **Scan screen:** the camera scans continuously. Each read is saved on the phone right away and shown in a list with a count.
+3. **New area popup:** over the camera screen, the user types a name for the scanning area. It appears whenever no area is open. Tapping the area name at the top of the scan screen later opens the same popup to rename the area.
+4. **Scan screen** (camera-style, always dark; see [docs/ideas/scan-screen-redesign.md](docs/ideas/scan-screen-redesign.md)): the camera scans continuously. Each read is saved on the phone right away and counted on the scans-list button.
 5. **Finish area:** after a confirmation, all of the area's scans are uploaded and appended to the sheet as `Timestamp | Code | Area | User`. When the upload succeeds, local data for the area is cleared and the app returns to step 3.
 
 **User stories / acceptance criteria**
@@ -21,7 +21,7 @@ A simple Android app for non-technical users. They scan barcodes one "area" at a
 - As a scanner, when I scan a code that's already in this area, I'm asked "Already scanned in this area. Add again?" and can choose Add or Skip.
 - As a scanner, holding one barcode in view doesn't record it (or ask about it) over and over.
 - As a scanner, a button on the Scan screen opens a drawer listing every scan in this area (newest first, with time). Long-pressing a scan asks "Delete this scan?", and it's removed only if I confirm.
-- As a scanner, the drawer has an **Abandon area** button. It asks for confirmation ("Abandon area and delete N scans? This can't be undone.") and only then deletes the area's local scans without uploading and returns to the Area screen.
+- As a scanner, the drawer has an **Abandon area** button. It asks for confirmation ("Abandon area and delete N scans? This can't be undone.") and only then deletes the area's local scans without uploading and shows the New area popup again.
 - As a scanner, I can switch the app between **English** and **Croatian** in Settings. The change applies immediately and is remembered.
 - As a scanner, if the app is killed or the phone restarts mid-area, reopening the app takes me back to the same area with all scans intact.
 - As a scanner, if I have no signal when I tap Finish, nothing is lost. I see an error, the scans stay on the phone, and I can retry later.
@@ -38,6 +38,7 @@ A simple Android app for non-technical users. They scan barcodes one "area" at a
 6. The app is distributed as a sideloaded, signed release APK. There is no Play Store listing.
 7. The UI is portrait-only. Min Android 8.0 (API 26).
 8. The language defaults to Croatian if the phone is set to Croatian, and English otherwise. The choice in Settings overrides this. It's implemented with `AppCompatDelegate.setApplicationLocales` (per-app language), which is why `androidx.appcompat` is included.
+9. **If an upload gets a reply, the sheet saved it.** If the network fails, every scan stays on the phone, the user can keep scanning, and the next Finish sends the whole list again. We accept the rare case where the sheet saves the rows but the reply is lost: after a retry, those rows can appear twice or reflect an old delete or rename.
 
 ## Tech Stack
 
@@ -155,7 +156,7 @@ class Store(private val prefs: SharedPreferences, private val scansFile: File) {
 3. A barcode held in front of the camera is recorded within about 1 s, with a beep and vibration, and is recorded once no matter how long it stays in view.
 4. Re-scanning a code that's already in the area prompts Add/Skip, and the answer is respected.
 5. Force-stopping the app mid-area and reopening it restores the area name and every scan.
-6. Finish while offline shows an error and keeps every scan. Finish online appends exactly N rows `Timestamp | Code | Area | User` to the `Scans` tab, clears local data, and returns to the Area screen.
+6. Finish while offline shows an error and keeps every scan. Finish online appends exactly N rows `Timestamp | Code | Area | User` to the `Scans` tab, clears local data, and shows the New area popup again.
 7. Retrying an upload whose response was lost doesn't create duplicate rows.
 8. Two phones finishing at the same time produce all rows from both, with none lost or overwritten.
 9. `0012345` and `=1+1` show in the sheet exactly as scanned.
