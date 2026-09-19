@@ -30,20 +30,8 @@ class MainActivity : AppCompatActivity() {
             MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
                 Surface(Modifier.fillMaxSize()) {
                     var editingSettings by rememberSaveable { mutableStateOf(!settings.configured) }
-                    // Read from disk at startup, so a killed app resumes its open area.
-                    var areaOpen by rememberSaveable { mutableStateOf(store.load() != null) }
-                    when {
-                        editingSettings -> SettingsScreen(settings, onDone = { editingSettings = false })
-                        !areaOpen -> AreaScreen(
-                            onStart = { store.start(it); areaOpen = true },
-                            onSettings = { editingSettings = true },
-                        )
-                        else -> ScanScreen(
-                            store, settings,
-                            onClosed = { areaOpen = false },
-                            onSettings = { editingSettings = true },
-                        )
-                    }
+                    if (editingSettings) SettingsScreen(settings, onDone = { editingSettings = false })
+                    else ScanScreen(store, settings, onSettings = { editingSettings = true })
                 }
             }
         }
