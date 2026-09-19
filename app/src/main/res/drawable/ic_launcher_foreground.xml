@@ -1,10 +1,23 @@
+<!-- Launcher icon: barcode inside aiming corners. 108dp canvas, art inside the 66dp safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Barcode bars inside the 66dp safe zone. -->
-    <path
-        android:fillColor="#FF1B1B1B"
-        android:pathData="M34,36h4v36h-4z M41,36h2v36h-2z M46,36h5v36h-5z M54,36h2v36h-2z M59,36h3v36h-3z M65,36h2v36h-2z M70,36h4v36h-4z" />
+    <!-- 85% so the frame corners stay inside the 66dp safe circle on round launchers. -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.85"
+        android:scaleY="0.85">
+        <path
+            android:pathData="M30,42V30H42M66,30H78V42M78,66V78H66M42,78H30V66"
+            android:strokeColor="#FF1B1B1B"
+            android:strokeWidth="4"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <path
+            android:fillColor="#FF1B1B1B"
+            android:pathData="M38,42h3v24h-3z M43,42h2v24h-2z M47,42h4v24h-4z M53,42h2v24h-2z M57,42h3v24h-3z M62,42h2v24h-2z M66,42h4v24h-4z" />
+    </group>
 </vector>
