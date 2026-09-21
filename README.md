@@ -14,7 +14,7 @@ See [SPEC.md](SPEC.md).
 5. Click **Deploy** and approve the permissions. Google will warn that the app isn't verified. Click **Advanced → Go to … (unsafe)**. This is expected, because the script is your own.
 6. Copy the **Web app URL**. It ends in `/exec`.
 7. Check it: open the URL in a browser. You should see `{"ok":true,"sheet":"<your sheet name>"}`.
-8. Make a QR code for your team. In desktop Chrome, open the URL, click the address bar, choose **Share → Create QR code**, and download it. Print it or send it to your team.
+8. Make a QR code for your team. In desktop Chrome or Firefox, open the URL, click the address bar, choose **Share → Create QR code**, and download it. Print it or send it to your team.
 
 > **Treat the URL and QR code like a password.** Anyone who has them can add rows to the sheet (but can't read it).
 > To revoke access, go to **Deploy → Manage deployments**, archive the deployment, and create a new one. The new deployment has a new URL.
